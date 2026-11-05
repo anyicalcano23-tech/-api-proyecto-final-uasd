@@ -76,14 +76,73 @@ app.post('/api/tareas', (req, res) => {
 
 // 4. PATCH: Actualizar una tarea existente
 app.patch('/api/tareas/:id', (req, res) => {
-    const tarea = tareas.find(t => t.id === parseInt(req.params.id));
-    if (!tarea) return res.status(404).json({ error: 'Recurso no encontrado' });
 
-    tarea.titulo = req.body.titulo || tarea.titulo;
-    if (req.body.completada !== undefined) tarea.completada = req.body.completada;
+    const id = Number(req.params.id);
 
-    res.json(tarea);
+    // Validar que el ID sea un número entero positivo
+    if (!Number.isInteger(id) || id <= 0) {
+        return res.status(400).json({
+            exito: false,
+            mensaje: 'El ID debe ser un número entero positivo'
+        });
+    }
+
+    // Buscar la tarea
+    const tarea = tareas.find(t => t.id === id);
+
+    // Verificar si la tarea existe
+    if (!tarea) {
+        return res.status(404).json({
+            exito: false,
+            mensaje: 'No se encontró una tarea con ese ID'
+        });
+    }
+
+    const { titulo, completada } = req.body;
+
+    // Verificar que se envíe al menos un dato
+    if (titulo === undefined && completada === undefined) {
+        return res.status(400).json({
+            exito: false,
+            mensaje: 'Debes enviar al menos un campo para actualizar'
+        });
+    }
+
+    // Validar el título si fue enviado
+    if (titulo !== undefined) {
+        if (typeof titulo !== 'string' || titulo.trim() === '') {
+            return res.status(400).json({
+                exito: false,
+                mensaje: 'El título debe ser un texto y no puede estar vacío'
+            });
+        }
+    }
+
+    // Validar el estado si fue enviado
+    if (completada !== undefined && typeof completada !== 'boolean') {
+        return res.status(400).json({
+            exito: false,
+            mensaje: 'El campo completada debe ser true o false'
+        });
+    }
+
+    // Actualizar solamente los campos recibidos
+    if (titulo !== undefined) {
+        tarea.titulo = titulo.trim();
+    }
+
+    if (completada !== undefined) {
+        tarea.completada = completada;
+    }
+
+    // Respuesta exitosa
+    res.status(200).json({
+        exito: true,
+        mensaje: 'Tarea actualizada correctamente',
+        datos: tarea
+    });
 });
+
 
 // 5. DELETE: Eliminar una tarea
 app.delete('/api/tareas/:id', (req, res) => {
