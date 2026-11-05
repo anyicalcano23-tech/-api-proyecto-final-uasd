@@ -38,16 +38,40 @@ app.get('/api/tareas/:id', (req, res) => {
 
 // 3. POST: Crear una nueva tarea
 app.post('/api/tareas', (req, res) => {
-    if (!req.body.titulo) {
-        return res.status(400).json({ error: 'El título es obligatorio' });
+
+    const { titulo, completada } = req.body;
+
+    // Validar que el título exista y sea texto
+    if (typeof titulo !== 'string' || titulo.trim() === '') {
+        return res.status(400).json({
+            exito: false,
+            mensaje: 'El título es obligatorio y debe ser texto'
+        });
     }
+
+    // Validar que completada sea verdadero o falso
+    if (completada !== undefined && typeof completada !== 'boolean') {
+        return res.status(400).json({
+            exito: false,
+            mensaje: 'El campo completada debe ser verdadero o falso'
+        });
+    }
+
+    // Crear la nueva tarea
     const nuevaTarea = {
         id: tareas.length + 1,
-        titulo: req.body.titulo,
-        completada: req.body.completada || false
+        titulo: titulo.trim(),
+        completada: completada ?? false
     };
+
     tareas.push(nuevaTarea);
-    res.status(201).json(nuevaTarea);
+
+    // Respuesta exitosa
+    res.status(201).json({
+        exito: true,
+        mensaje: 'Tarea creada correctamente',
+        datos: nuevaTarea
+    });
 });
 
 // 4. PATCH: Actualizar una tarea existente
