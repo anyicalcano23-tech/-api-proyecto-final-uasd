@@ -1,7 +1,9 @@
 const express = require('express');
+const cors = require('cors'); // <-- IMPORTANTE: Importamos CORS
 const app = express();
 
 app.use(express.json()); // Middleware para procesar JSON
+app.use(cors()); // <-- IMPORTANTE: Permitimos que React se conecte
 
 // ==========================================
 // DATOS EN MEMORIA (Simulando base de datos)
